@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Comentario
 
-@author: CAMBIAR
+
+@author: J.P Ballestrino, C. Deandraya, C. Uviedo
 """
-#
+import numpy
+import math
 # base packages
 #
 import os
