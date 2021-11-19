@@ -2,7 +2,8 @@
 
 ## Description
 
-What it does
+Autobol is a video classification algorithm with the task of meteor detection in allsky cameras. It's part of a major project called BOCOSUR.
+This implementation has two main functions, classify videos and re-train the model to improve performance.
 
 ## Installation
 
