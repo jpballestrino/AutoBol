@@ -10,7 +10,7 @@ This implementation has two main functions, classify videos and re-train the mod
 ### Dependencies
 
 Packages needed to run this one
-NumPy
+'''NumPy'''
 SciPy
 math
 matplotlib
