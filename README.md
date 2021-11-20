@@ -9,7 +9,7 @@ This implementation has two main functions, classify videos and re-train the mod
 
 ### Dependencies
 
-Packages needed to run: ```NumPy```, ```SciPy```, ```math```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit```
+Packages needed to run: ```NumPy```, ```SciPy```, ```math```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit-image```
 
 ## Usage
 
