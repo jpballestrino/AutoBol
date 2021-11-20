@@ -17,6 +17,7 @@ matplotlib
 xgboost
 moviepy
 cv2
+pandas
 
 ## Usage
 
