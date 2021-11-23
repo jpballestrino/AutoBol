@@ -23,7 +23,7 @@ if __name__ == '__main__':
     ap.add_argument("-i", "--indir", type=str, required=True,help="path dir where to find files")
     ap.add_argument("-o","--outdir", type=str,required=True,help="Where to store results")
     ap.add_argument("-l","--list", type=str, required=True,help="Text file where input files are specified, one per line.")
-    ap.add_argument("-m","--mode", type=str, required=True,help="Predict, train or create mask")
+    ap.add_argument("-m","--mode", type=str, required=True,help="predict, train or mask")
     #
     # INICIALIZACION
     #
