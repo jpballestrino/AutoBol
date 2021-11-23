@@ -13,4 +13,4 @@ Packages needed to run: ```NumPy```, ```SciPy```, ```math```, ```matplotlib```, 
 
 ## Usage
 
-How to run it
+Function mask: One the mask is finished press Esc button to exit the function.
