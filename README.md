@@ -18,6 +18,7 @@ Los paquetes necesarios para correr AUTOBOL son: ```NumPy```, ```SciPy```, ```ma
 Estos se pueden instalar mediante los comandos:
 
 pip install numpy scipy matplotlib moviepy pandas xgboost scikit-image pyfiglet
+
 pip install opencv-python
 
 
