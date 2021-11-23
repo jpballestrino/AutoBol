@@ -1,15 +1,26 @@
 # AutoBol
 
-## Description
+## Clasificador automático de videos para proyecto Bocosur
 
-Autobol is a video classifier algorithm for meteors detection with allsky cameras located across the Uruguayan territory. It's part of a major project called BOCOSUR (http://bolidos.astronomia.edu.uy/).
-This implementation has two main functions, classify videos and re-train the model to improve performance.
+## Descripción
 
-## Installation
+Autobol es un programa implementado en Python que tiene como objetivo de detectar bólidos en los videos obtenidos por las estaciones con cámaras allsky localizadas a través del territorio Uruguayo. Es parte de un proyecto principal llamado BOCOSUR (http://bolidos.astronomia.edu.uy/).
+Este programa tiene dos funciones principales, clasificar videos y reentrenar el modelo.
+
+## Instalación
+
+Este programa está 100% implementado en Python 3, software de uso libre y gratuito. 
 
 ### Dependencies
 
-Packages needed to run: ```NumPy```, ```SciPy```, ```math```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit-image```, ```pyfiglet```
+Los paquetes necesarios para correr AUTOBOL son: ```NumPy```, ```SciPy```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit-image```, ```pyfiglet```
+
+Estos se pueden instalar mediante los comandos:
+
+pip install numpy scipy matplotlib moviepy pandas xgboost scikit-image pyfiglet
+pip install opencv-python
+
+
 
 ## Usage
 
