@@ -13,11 +13,11 @@ Este programa está 100% implementado en Python 3, software de uso libre y gratu
 
 ### Dependencies
 
-Los paquetes necesarios para correr AUTOBOL son: ```NumPy```, ```SciPy```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit-image```, ```pyfiglet```
+Los paquetes necesarios para correr AUTOBOL son: ```NumPy```, ```SciPy```, ```matplotlib```, ```xgboost```, ```moviepy```, ```cv2```, ```pandas```, ```scikit-image```, ```pyfiglet``` ```sklearn```
 
 Estos se pueden instalar mediante los comandos:
 
-pip install numpy scipy matplotlib moviepy pandas xgboost scikit-image pyfiglet
+pip install numpy scipy matplotlib moviepy pandas xgboost scikit-image pyfiglet sklearn
 
 pip install opencv-python
 
