@@ -13,10 +13,6 @@ import matplotlib.cm as cm
 # from PIL import Image
 
 def tracking(ruta_entrada, ploteo=False):
-    # import cv2
-    # from scipy import ndimage
-    #
-    # import numpy.random as rand
 
     framesarray, fps = get_frames(ruta_entrada)
     video_tracking = numpy.empty_like(framesarray)  # Creo video vacio para luego cargar el tracking
