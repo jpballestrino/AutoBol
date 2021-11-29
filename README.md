@@ -4,7 +4,7 @@
 
 ## Descripción
 
-Autobol es un programa implementado en Python que tiene como objetivo de detectar bólidos en los videos obtenidos por las estaciones con cámaras allsky localizadas a través del territorio Uruguayo. Es parte de un proyecto principal llamado BOCOSUR (http://bolidos.astronomia.edu.uy/).
+Autobol es un programa implementado en Python que tiene como objetivo detectar bólidos en los videos obtenidos por las estaciones con cámaras allsky localizadas a través del territorio Uruguayo. Es parte de un proyecto principal llamado BOCOSUR (http://bolidos.astronomia.edu.uy/).
 Este programa tiene dos funciones principales, clasificar videos y reentrenar el modelo.
 
 ## Instalación
