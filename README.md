@@ -24,5 +24,13 @@ pip install opencv-python
 
 
 ## Usage
+-o : indica la ruta para guardar la salida
+-i : indica la ruta de entrada de los archivos
+-mod: Elección del modelo a utilizar, válido solo para predict
+-u : Umbral de decisión, válido sólo para predict
+-t : test_size, válido solo para train
+-mn : Nombre del modelo al guardarlo, valido solo para train
 
-Function mask: One the mask is finished press Esc button to exit the function.
+
+
+Function mask: Once the mask is finished press Esc button to exit the function.
