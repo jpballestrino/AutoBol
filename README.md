@@ -35,7 +35,7 @@ pip install opencv-python
 
 -t : test_size, válido solo para train
 
--mn : Nombre del modelo al guardarlo, valido solo para train
+-m : Nombre del modelo al guardarlo, valido solo para train
 
 
 
