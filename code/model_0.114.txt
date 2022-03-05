@@ -1,0 +1,12 @@
+Informacion de model_0.114.bin entrenado utilizando xgboost: 
+Modelo entrenado con: 154 bólidos y 2395 no bólidos en entrenamiento y luego testeado con 27 bolidos y 423 de no bolidos en test
+El mejor umbral encontrado según el f2_score es:  
+0.114
+Con los hiperparametros: 
+ {'colsample_bytree': 0.8, 'eta': 0.3, 'eval_metric': 'mae', 'max_depth': 4, 'min_child_weight': 5, 'objective': 'binary:logistic', 'subsample': 0.8, 'scale_pos_weight': 15.551948051948052}
+y matriz de confusion: 
+ array([[418,   5],
+       [  3,  24]], dtype=int64)
+feature importance: 
+ {'velocidad media': 53.0, 'mean_intensidad': 43.0, 'N': 49.0, 'dispersion': 46.0, 'max_vel': 60.0, 'max_int': 28.0, 'min_vel': 52.0, 'min_int': 53.0, 'var_int': 50.0, 'V_feat_i_1': 36.0, 'V_feat_i_2': 36.0, 'V_feat_v_1': 43.0, 'V_feat_v_2': 40.0, 'V_feat_fwhm_1': 42.0, 'V_feat_fwhm_2': 34.0, 'loss': 61.0, 'recorrido': 43.0}
+tiempo de entrenamiento total 268.3006241321564 segundos

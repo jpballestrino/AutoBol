@@ -1,19 +1,17 @@
 """
 Copyright (C) 2021  Juan Pedro Ballestrino, Cecilia Deandraya & Cristian Uviedo
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 
 import numpy
 import math
@@ -27,9 +25,56 @@ import cv2
 import skimage.draw
 import matplotlib.image as mpl
 import matplotlib.cm as cm
-# from PIL import Image
+from PIL import Image, ImageDraw as D
+
+
+def localizer(fname,framesarray,fout):
+    _, _, x, y, _, _, _, _, _, _ = tracking(fname)
+    maximo = numpy.percentile(framesarray, 100, axis=0)
+    max_x=numpy.max(x)+3
+    min_x=numpy.min(x)-3
+
+    max_y=numpy.max(y)+3
+    min_y=numpy.min(y)-3
+    coincide=False
+    i=0
+    while coincide==False:
+        if fname[i:i+7].startswith('Station'):
+            coincide=True
+        else:
+            i=i+1
+    mpl.imsave(fout+'/'+fname[i:i+30]+'png', maximo, cmap=cm.gray)
+
+    img = Image.open(fout+'/'+fname[i:i+30]+'png')
+    draw = D.Draw(img)
+    draw.rectangle((min_x, min_y,max_x, max_y), outline="red")
+    im1= img
+    return im1, i
+
 
 def tracking(ruta_entrada, ploteo=False):
+    """
+    	If it exists, the event that occurs during the video is tracked, throughout the frames.
+    	In addition to the determination of some of its characteristics.
+
+    	Inputs:
+    		- ruta_entrada: String, with the location and name of the file to execute.
+    		- ploteo: Booleano, allows plotting RANSAC model.
+
+    	Returns:
+    		- ruta_entrada: String, with the location and name of the file to execute.
+    		- tiempo: A numpy array, with the time vector of the video.
+    		- X_model: A numpy array, with the horizontal position of the event in the video.
+    		- Y_model: A numpy array, with the vertical position of the event in the video.
+    		- LC: A numpy array, with the intensity value of the object relative to the background intensity.
+    		- N: Integer, with the value of the size of the numpy array that contains the frames of the video.
+    		- total_dispersion: Integer, with the value of the average dispersion of the event positions in
+    		the frames.
+    		- FWHMarray: A numpy array, with the value of the FWHM of the event in the frames.
+    		- loss: Integer, with the mean square error between the trajectory it makes and the model of a
+    		circumference.
+    		- d: Integer, with the value of the distance traveled.
+    	"""
 
     framesarray, fps = get_frames(ruta_entrada)
     video_tracking = numpy.empty_like(framesarray)  # Creo video vacio para luego cargar el tracking
@@ -130,7 +175,7 @@ def tracking(ruta_entrada, ploteo=False):
         d = distancia_recorrida(r, ang([[xc, yc], [X_model[0], Y_model[0]]], [[xc, yc], [X_model[-1], Y_model[-1]]]))
 
         # -----------------------------------------------------------------------------------------------------------
-        Int = []
+
         FWHMarray = []
         LC = []
         for p in range(len(pos_frame_abs)):
@@ -147,8 +192,6 @@ def tracking(ruta_entrada, ploteo=False):
 
             fwhm, fwhm_sp = FWHM(video_tracking[pos_frame_abs[p]], Y_model[p][0], X_model[p][0])
             FWHMarray.append(fwhm_sp)
-            auxi = fotometria(framesarray[pos_frame_abs[p]], fondo, fwhm, Y_model[p][0], X_model[p][0])
-            Int.append(auxi)
             lc = CurvaDeLuz(framesarray[pos_frame_abs[p]], fondo, Y_model[p][0], X_model[p][0], 2 * round(fwhm_sp))
             LC.append(lc)
         total_dispersion = dispersion(X_model, Y_model)
@@ -164,24 +207,32 @@ def tracking(ruta_entrada, ploteo=False):
             ax.plot(excluidos_c_RANSAC, excluidos_f_RANSAC, '*b', label='outliers RANSAC')
             ax.plot(excluidos_c_filtro, excluidos_f_filtro, '*g', label='outliers filtro')
             ax.plot(X_model, Y_model, '*y', label='inlier 2da vuelta con filtro')
-            ax.plot(X_model[0], Y_model[0], '*r')
-            ax.plot(X_model[-1], Y_model[-1], '*r')
             ax.set_title(ruta_entrada)
             ax.set_aspect(1)
             ax.imshow(maximo, cmap='gray')
             plt.legend()
 
-        return tiempo, X_model, Y_model, LC, len(X_model), total_dispersion[0], FWHMarray, loss, d
+        return ruta_entrada,tiempo, X_model, Y_model, LC, len(X_model), total_dispersion[0], FWHMarray, loss, d
 
     else:
         if (len(X_detectadas) < 3):
             print('Evento con pocos puntos (<3), verificar si la máscara no borra el evento.')
-        return [numpy.nan], [numpy.nan], [numpy.nan], [numpy.nan], numpy.nan, numpy.nan, [
+        return ruta_entrada, [numpy.nan], [numpy.nan], [numpy.nan], [numpy.nan], numpy.nan, numpy.nan, [
             numpy.nan], numpy.nan, numpy.nan
 
 
 # -----------------------------------------------------------------------------------------------------------''
 def distancia_recorrida(r, ang):
+    """
+    Measures the arc distance between the first and last point of the event.
+
+    Inputs:
+    	- r: Integer, with the value of the radius of the circumference model described by the event.
+    	- ang: Integer with the value of the circumference angle traveled described by the event.
+
+    Returns:
+    	- d: Integer, with the value of the distance traveled.
+    """
     dist_recorrida = r * ang
     return dist_recorrida
 
@@ -190,10 +241,32 @@ def distancia_recorrida(r, ang):
 
 
 def dot(vA, vB):
+    """
+    Get dot prod.
+
+    Inputs:
+    	- vA: A numpy array 1x2
+    	- vB: A numpy array 1x2
+
+    Returns:
+    	- Integer, with the value vA[0] * vB[0] + vA[1] * vB[1]
+    """
     return vA[0] * vB[0] + vA[1] * vB[1]
 
 
 def ang(lineA, lineB):
+    """
+    Calculates the angle of an arc circumference.
+
+    Inputs:
+    	- lineA: A numpy array, with the position of the center of the circumference and the
+    	initial position.
+    	- lineB: A numpy array, with the position of the center of the circumference and the
+    	final position.
+
+    Returns:
+    	- ang: Integer with the value of the circumference angle traveled described by the event.
+    """
     # Get nicer vector form
     vA = [(lineA[0][0] - lineA[1][0]), (lineA[0][1] - lineA[1][1])]
     vB = [(lineB[0][0] - lineB[1][0]), (lineB[0][1] - lineB[1][1])]
@@ -224,7 +297,17 @@ def ang(lineA, lineB):
 
 # -------------------------------------------------------------------------------------
 def velocidad(t, x, y):  # Calcula la velocidad en pixeles/sec
+    """
+    Calculate the instantaneous velocity of the event along the frames.
 
+    Inputs:
+    	- t: A numpy array, with the time vector of the video.
+    	- x: A numpy array, with the horizontal position of the event in the video.
+    	- y: A numpy array, with the vertical position of the event in the video.
+
+    Returns:
+    	- v: A numpy list, with the with the instantaneous speed of the event along the frames.
+    """
     v = []
     for i in range(len(t)):
         if (i == 0):
@@ -245,6 +328,17 @@ def velocidad(t, x, y):  # Calcula la velocidad en pixeles/sec
 
 # --------------------------------------------------------------------------------
 def get_frames(ruta_entrada):
+    """
+    Gets the frames of a video from a file route and the fps of it.
+
+    Inputs:
+    	- ruta_entrada: String, with the location and name of the file to execute.
+
+    Returns:
+    	- frames: Numpy array, containing numpy array with video frames.
+    	- video.fps: Integer, with the value of the frames per second of the video.
+    """
+
     video = VideoFileClip(ruta_entrada)  # Cargo el video
     frames = []
     for i in video.iter_frames():  # Obtengo los frames
@@ -255,6 +349,20 @@ def get_frames(ruta_entrada):
 
 # -------------------------------------------------------------------------------------
 def RANSAC_3(x, y, residual_treshold, ploteo=False):
+    """
+    Obtains the circumference model that best fits the N number of points.
+
+    Inputs:
+    	- x: A numpy array, with the horizontal position of the event in the video.
+    	- y: A numpy array, with the vertical position of the event in the video.
+    	- residual_treshold: Threshold for differential inliers from outliers.
+    	- ploteo: Booleano, allows plotting RANSAC model.
+
+    Returns:
+    	- pocket: Numpy list, containing numpy array with the integer coordinates of
+    	the center, the radius of the circumference. The inliners and the cumulative
+    	sum of the difference between the points and the model.
+    """
     actual_loss = 50000
     k = 0
     retorno = []
@@ -348,6 +456,18 @@ def RANSAC_3(x, y, residual_treshold, ploteo=False):
 # ----------------------------------------------------------------------------------------
 
 def V_feature(array):
+    """
+    'Smoothness' of a feature.
+
+    Inputs:
+    	- array: A numpy array.
+
+    Returns:
+    	- feature1: Integer, with the sum of the distance between the points of a curve
+    	resampled at 25 (fps).
+    	- feature2: Integer, with the sum of the distance between the points of a curve
+    	resampled at 25 (fps) and normalized.
+    """
     M = 25
     N = len(array)
     resample = signal.resample(array, M)
@@ -365,6 +485,15 @@ def V_feature(array):
 
 
 def numero_estacion(file):
+    """
+    Gets the station number from the file name.
+
+    Inputs:
+    	- file: String, with file name.
+
+    Returns:
+    	- f: Integer with corresponding station number.
+    """
     f = 0
     Encontro = False
     while (f < 100) and Encontro == False:
@@ -380,6 +509,14 @@ def numero_estacion(file):
 # ----------------------------------------------------------------------------------------
 
 def MousePoints(event, x, y, flags, params):
+    """
+    Get points from the mouse and store them in lists.
+
+    Inputs:
+    	- event: Mouse button identifier code.
+    	- x: Numpy list, containing numpy array with the horizontal position of the event in the video.
+    	- y: Numpy list, containing numpy array with the vertical position of the event in the video.
+    """
 
     global counter
 
@@ -394,6 +531,16 @@ def MousePoints(event, x, y, flags, params):
         counter = counter - 1
 # ----------------------------------------------------------------------------------------
 def CrearMascara(file):
+    """
+    Create a custom mask for a given station from a video
+
+    Inputs:
+    	- file: String, with file name.
+
+    Returns:
+    	- Nothing returns. But save the obtained mask in the directory:
+    	'Mascaras/Mascara_Station_' + str(int(f)) + '.png'
+    """
     global filll
     global colll
     global counter
@@ -443,6 +590,20 @@ def CrearMascara(file):
 
 # ------------------------------------------------------------------------
 def center_mass(frame, i_obj, j_obj, ventana):
+    """
+    Determine the center of mass of the event.
+
+    Inputs:
+    	- Frame: A 640x480 numpy array with one image of the video.
+    	- i_obj: Integer with estimated event horizontal position.
+    	- j_obj: Integer with estimated event vertical position.
+    	- ventana: Integer with size of the window in which the center of mass is calculated.
+    	A value of 5-6 pixels is recommended.
+
+    Returns:
+    	- x_c: Horizontal coordinate of the center of mass of the object.
+    	- y_c: Vertical coordinate of the center of mass of the object.
+    """
     ventana_i = ventana
     ventana_j = ventana
     Ancho, Alto = frame.shape
@@ -478,23 +639,24 @@ def center_mass(frame, i_obj, j_obj, ventana):
 
 # ------------------------------------------------------------
 
-def fotometria(Frame, fondo, FWHM, CM_f, CM_c):
-    r = FWHM / 2
-    Mask1 = Frame[0][round(CM_f - 3 * r / 2):round(CM_f + 3 * r / 2) + 1,
-            round(CM_c - 3 * r / 2):round(CM_c + 3 * r / 2) + 1]
-    h1, w1 = Mask1.shape
-
-    Fondo = fondo[round(CM_f - 3 * r / 2):round(CM_f + 3 * r / 2) + 1,
-            round(CM_c - 3 * r / 2):round(CM_c + 3 * r / 2) + 1]
-    Int = numpy.sum(Mask1 - Fondo)
-
-
-    return Int
-
 
 # -------------------------------------------------------------------------------
 
 def CurvaDeLuz(Frame, Fondo, CM_f, CM_c, Size_Win):
+    """
+	Calculates the light intensity of the event with respect to the background.
+
+	Inputs:
+		- Frame: A 640x480 numpy array with one image of the video.
+		- Fondo: A 640x480 numpy array with the background image of the video.
+		- CM_f: Integer with vertical coordinate of the center of mass of the object.
+		- CM_c: Integer with horizontal coordinate of the center of mass of the object.
+		- Size_Win: Integer with size of the window in which the intensity is calculated.
+
+	Returns:
+		- LC: Integer with the value of light intensity of the event.
+	"""
+
     lc = numpy.sum(
         Frame[0][round(CM_f) - Size_Win:round(CM_f) + Size_Win, round(CM_c) - Size_Win:round(CM_c) + Size_Win])
     fon = numpy.sum(Fondo[round(CM_f) - Size_Win:round(CM_f) + Size_Win, round(CM_c) - Size_Win:round(CM_c) + Size_Win])
@@ -508,6 +670,19 @@ def CurvaDeLuz(Frame, Fondo, CM_f, CM_c, Size_Win):
 
 
 def FWHM(Frame, CM_f, CM_c):
+    """
+    Calculates the FWHM - Full Width at Half Maximum
+
+    Inputs:
+    	- Frame: A 640x480 numpy array with one image of the video.
+    	- CM_f: Integer with vertical coordinate of the center of mass of the object.
+    	- CM_c: Integer with horizontal coordinate of the center of mass of the object.
+
+    Returns:
+    	- fwhm: Integer with the value of FWHM.
+    	- fwhm_spix: Integer with the value of FWHM at the subpixel level.
+
+    """
     '''
     Calcula el FWHM - Full Width at Half Maximum
     '''
@@ -599,6 +774,19 @@ def xy_to_quadratic(xy):
 
 # ------------------------------------------------------------------------------
 def zoom_on_frame(frame, x, y, margin=20):
+    """
+    Get a zoomed box from a frame (A 640x480 numpy array)
+
+    Inputs:
+    	- frame: A 640x480 numpy array with one image of the video.
+    	- x: Integer with vertical coordinate of interest.
+    	- y: Integer with horizontal coordinate of interest.
+    	- margin: Integer with size of the window. A value of 20 pixels is by default.
+
+    Returns:
+    	- frame[ymin:ymax, xmin:xmax]: A margin x margin numpy array.
+
+    """
     h, w = frame.shape
     xmin, xmax = int(x - margin), min(int(x + margin), w - 1)
     ymin, ymax = int(y - margin), min(int(y + margin), h - 1)
@@ -643,6 +831,17 @@ def reconstruir_brillo(img, sat):
 
 
 def filtro_extra(X_bol, Y_bol, pertenecen2):
+    '''
+    Eliminates outliers that fits in the model but are caused by other events or noise. It's a second filter after RANSAC
+
+
+    :param X_bol: x axis coordinates of the event
+    :param Y_bol: y axis coordinates of the event
+    :param pertenecen2: boolean list of the ransac model
+    :return: modified boolean list of the ransac model
+    '''
+
+
     X_ord = sorted(X_bol)  # se ordenan las posiciones de menor a mayor
     Y_ord = sorted(Y_bol)  # se ordenan las posiciones de menor a mayor
     if len(X_ord) / 2 == 0:
@@ -705,6 +904,18 @@ def filtro_extra(X_bol, Y_bol, pertenecen2):
 # -------------------------------------------------------------------------------
 
 def dispersion(x, y):
+    """
+    Calculates the dispersion between the event positions
+
+    Inputs:
+    	- x: Integer with vertical coordinate of interest.
+    	- y: Integer with horizontal coordinate of interest.
+
+    Returns:
+    	- disper: Integer with the sum of each of the distances of the event
+    	positions with respect to their midpoint, normalized.
+
+    """
     x_mean = numpy.mean(x)
     y_mean = numpy.mean(y)
     c = [x_mean, y_mean]
@@ -716,26 +927,57 @@ def dispersion(x, y):
 
     return disper
 
+
 def Clasificar(video):
-  t, x ,y,i, N, total_dispersion,FWHM,loss,d=tracking(video)
-  if numpy.isnan(t[0]) or numpy.isnan(i[0]):
-    return 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-  else:
-    vel=velocidad(t,x,y)
-    if bool(vel) and bool(i) and bool(FWHM):
-      velocidad_media=numpy.mean(numpy.array(vel))
-      var_vel=numpy.var(numpy.array(vel))
-      max_vel=numpy.max(numpy.array(vel))
-      min_vel=numpy.min(numpy.array(vel))
-      max_int=numpy.max(numpy.array(i))
-      min_int=numpy.min(numpy.array(i))
-      var_int=numpy.var(numpy.array(i))
-      mean_intensidad=numpy.mean(i)
-      mean_fwhm=numpy.mean(FWHM)
-      var_fwhm=numpy.var(FWHM)
-      V_feat_i_1,V_feat_i_2=V_feature(vel)
-      V_feat_v_1,V_feat_v_2=V_feature(i)
-      V_feat_fwhm_1,V_feat_fwhm_2=V_feature(FWHM)
-      return velocidad_media,mean_intensidad,N,total_dispersion,max_vel,max_int,min_vel,min_int,var_int,var_vel,mean_fwhm,var_fwhm,V_feat_i_1,V_feat_i_2,V_feat_v_1,V_feat_v_2,V_feat_fwhm_1,V_feat_fwhm_2,loss,d
+    """
+    	Function that gets some of the characteristics of a video event.
+
+    	Inputs:
+    		- video: String, with the location and name of the file to execute.
+
+    	Returns:
+    		- velocidad_media: Integer, with the average speed of the event.
+    		- mean_intensidad: Integer, with the average light intensity of the event.
+    		- N: Integer, with the value of the size of the numpy array that contains the frames of the video.
+    		- total_dispersion: Integer, with the value of the average dispersion of the event positions in
+    		the frames.
+    		- max_vel: Integer, with the maximum speed of the event.
+    		- max_int: Integer, with the maximum light intensity of the event.
+    		- min_vel: Integer, with the minimum speed of the event.
+    		- min_int: Integer, with the minimum light intensity of the event.
+    		- var_int: Integer, with the variance speed of the event.
+    		- var_vel: Integer, with the variance light intensity of the event.
+    		- mean_fwhm: Integer, with the average FWHM of the event.
+    		- var_fwhm: Integer, with the variance FWHM of the event.
+    		- V_feat_i_1: Intenger, with the softness of light intensity.
+    		- V_feat_i_2: Intenger, with the softness of light intensity normalized.
+    		- V_feat_v_1: Intenger, with the softness of speed of the event.
+    		- V_feat_v_2: Intenger, with the softness of speed of the event normalized.
+    		- V_feat_fwhm_1: Intenger, with the softness of FWHM of the event.
+    		- V_feat_fwhm_2: Intenger, with the softness of FWHM of the event normalized.
+    		- loss: Integer, with the mean square error between the trajectory it makes and the model of a
+    		circumference.
+    		- d: Integer, with the value of the distance traveled.
+    	"""
+    ruta_entrada, t, x, y, i, N, total_dispersion, FWHM, loss, d = tracking(video)
+    if numpy.isnan(t[0]) or numpy.isnan(i[0]):
+        return ruta_entrada, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     else:
-      return 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        vel = velocidad(t, x, y)
+        if bool(vel) and bool(i) and bool(FWHM):
+            velocidad_media = numpy.mean(numpy.array(vel))
+            var_vel = numpy.var(numpy.array(vel))
+            max_vel = numpy.max(numpy.array(vel))
+            min_vel = numpy.min(numpy.array(vel))
+            max_int = numpy.max(numpy.array(i))
+            min_int = numpy.min(numpy.array(i))
+            var_int = numpy.var(numpy.array(i))
+            mean_intensidad = numpy.mean(i)
+            mean_fwhm = numpy.mean(FWHM)
+            var_fwhm = numpy.var(FWHM)
+            V_feat_i_1, V_feat_i_2 = V_feature(vel)
+            V_feat_v_1, V_feat_v_2 = V_feature(i)
+            V_feat_fwhm_1, V_feat_fwhm_2 = V_feature(FWHM)
+            return ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int, var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1, V_feat_fwhm_2, loss, d
+        else:
+            return ruta_entrada, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
