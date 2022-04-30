@@ -1,6 +1,7 @@
 # AutoBol
 
-## Clasificador automático de videos para proyecto Bocosur
+## Detección Automática de Bólidos con Cámaras AllSky
+
 
 ## Descripción
 
