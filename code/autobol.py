@@ -63,29 +63,32 @@ if __name__ == '__main__':
     if mode == "predict":
         if verbose:
             foutdir = outdir
-            for file in os.walk(indir):
-                filename = os.fsdecode(file)
-                if filename.endswith(".avi"):
-                    pathh = indir+'/' + os.path.join(filename)
-                    print(pathh)
-                    functions.predict(pathh, foutdir,model,umb,True,False)
+            for dirpath, dirnames, filenames in os.walk(indir):
+                for filename in filenames:
+                    filename = os.fsdecode(filename)
+                    if filename.endswith(".avi"):
+                        pathh= dirpath+'/' + os.path.join(filename)
+                        print(pathh)
+                        functions.predict(pathh, foutdir,model,umb,True,False)
         else:
             if loc:
                 foutdir = outdir
-                for file in os.listdir(indir):
-                    filename = os.fsdecode(file)
-                    if filename.endswith(".avi"):
-                        pathh = indir+'/' + os.path.join(filename)
-                        print(pathh)
-                        functions.predict(pathh, foutdir,model,umb,False,True)
+                for dirpath, dirnames, filenames in os.walk(indir):
+                    for filename in filenames:
+                        filename = os.fsdecode(filename)
+                        if filename.endswith(".avi"):
+                            pathh = dirpath + '/' + os.path.join(filename)
+                            print(pathh)
+                            functions.predict(pathh, foutdir,model,umb,False,True)
             else:
                 foutdir = outdir
-                for file in os.listdir(indir):
-                    filename = os.fsdecode(file)
-                    if filename.endswith(".avi"):
-                        pathh = indir + '/' + os.path.join(filename)
-                        print(pathh)
-                        functions.predict(pathh, foutdir, model, umb, False, False)
+                for dirpath, dirnames, filenames in os.walk(indir):
+                    for filename in filenames:
+                        filename = os.fsdecode(filename)
+                        if filename.endswith(".avi"):
+                            pathh = dirpath + '/' + os.path.join(filename)
+                            print(pathh)
+                            functions.predict(pathh, foutdir, model, umb, False, False)
 
     elif mode == "train":
         functions.train(indir, outdir,test_sz)
