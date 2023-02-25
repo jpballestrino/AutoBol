@@ -18,15 +18,15 @@ from PIL import Image
 def save_predict(data,salida,verbose):
 
     if verbose:
-        if not os.path.exists(salida + '\Clasificacion.csv'):  # create output di
-            data.to_csv(salida + '\Clasificacion.csv', index=False)
+        if not os.path.exists(salida + '/Clasificacion.csv'):  # create output di
+            data.to_csv(salida + '/Clasificacion.csv', index=False)
         else:
-            data.to_csv(salida + '\Clasificacion.csv', mode='a', index=False, header=False)
+            data.to_csv(salida + '/Clasificacion.csv', mode='a', index=False, header=False)
     else:
-        if not os.path.exists(salida + '\Predicciones.csv'):  # create output di
-            data.to_csv(salida + '\Predicciones.csv', index=False)
+        if not os.path.exists(salida + '/Predicciones.csv'):  # create output di
+            data.to_csv(salida + '/Predicciones.csv', index=False)
         else:
-            data.to_csv(salida + '\Predicciones.csv', mode='a', index=False, header=False)
+            data.to_csv(salida + '/Predicciones.csv', mode='a', index=False, header=False)
     pass
 
 

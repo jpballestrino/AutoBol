@@ -51,7 +51,6 @@ def localizer(fname,framesarray,fout):
     im1= img
     return im1, i
 
-
 def tracking(ruta_entrada, ploteo=False):
     """
     	If it exists, the event that occurs during the video is tracked, throughout the frames.
@@ -93,7 +92,7 @@ def tracking(ruta_entrada, ploteo=False):
     # CARGO LA MASCARA
     #
     station = numero_estacion(ruta_entrada)
-    if not os.path.exists('Mascaras\Mascara_Station_' + str(station) + '.png'):
+    if not os.path.exists('./Mascaras/Mascara_Station_' + str(station) + '.png'):
         print('La máscara de la estación ',station,' no existe, creela ahora!')
         global filll
         global colll
@@ -103,7 +102,7 @@ def tracking(ruta_entrada, ploteo=False):
         counter=-1
         CrearMascara(ruta_entrada)
 
-    Mask = plt.imread('Mascaras\Mascara_Station_' + str(station) + '.png')  # RUTA DE LAS MASCARAS
+    Mask = plt.imread('./Mascaras/Mascara_Station_' + str(station) + '.png')  # RUTA DE LAS MASCARAS
     Mask = numpy.asarray(Mask)[:, :, 0]
     #
     # obtengo las coordenadas del pixel máximo frame a frame
@@ -583,7 +582,7 @@ def CrearMascara(file):
         rr, cc = skimage.draw.polygon(r, c, (cantidad_filas, cantidad_columnas))
         mask[rr, cc] = 1
 
-        mpl.imsave('Mascaras\Mascara_Station_' + str(int(f)) + '.png', mask,cmap=cm.gray)
+        mpl.imsave('./Mascaras/Mascara_Station_' + str(int(f)) + '.png', mask,cmap=cm.gray)
 
     return
 

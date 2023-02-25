@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 """
 Copyright (C) 2021  Juan Pedro Ballestrino, Cecilia Deandraya & Cristian Uviedo
 This program is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import fbeta_score, confusion_matrix
 import abio
 import time
-from algoritmos import tracking, get_frames
+from algoritmos import get_frames
 
 
-def predict(fname,salida,model,umbral=0.083,verbose=False,localize=False):
+def predict(fname, salida, model, umbral=0.083, verbose=False, localize=False):
     '''
     Predict
     '''
@@ -37,20 +37,28 @@ def predict(fname,salida,model,umbral=0.083,verbose=False,localize=False):
         data.append(
             [ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int,
              var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1,
-             V_feat_fwhm_2, loss, d,'NaN'])
-        data_ft = pd.DataFrame(data, columns=['Video', 'velocidad media', 'mean_intensidad', 'N', 'dispersion', 'max_vel',
-                                         'max_int', 'min_vel', 'min_int', 'var_int', 'var_vel', 'mean_fwhm', 'var_fwhm',
-                                         'V_feat_i_1', 'V_feat_i_2', 'V_feat_v_1', 'V_feat_v_2', 'V_feat_fwhm_1',
-                                         'V_feat_fwhm_2', 'loss', 'recorrido','Clasificación'])
-        abio.save_predict(data_ft,salida,verbose)
+             V_feat_fwhm_2, loss, d, 'NaN'])
+        data_ft = pd.DataFrame(data,
+                               columns=['Video', 'velocidad media', 'mean_intensidad', 'N', 'dispersion', 'max_vel',
+                                        'max_int', 'min_vel', 'min_int', 'var_int', 'var_vel', 'mean_fwhm', 'var_fwhm',
+                                        'V_feat_i_1', 'V_feat_i_2', 'V_feat_v_1', 'V_feat_v_2', 'V_feat_fwhm_1',
+                                        'V_feat_fwhm_2', 'loss', 'recorrido', 'Clasificación'])
+        abio.save_predict(data_ft, salida, verbose)
 
     else:
         booster = xgb.Booster()
         booster.load_model(model)
-        data=[]
-        ruta_entrada,velocidad_media,mean_intensidad,N,total_dispersion,max_vel,max_int,min_vel,min_int,var_int,var_vel,mean_fwhm,var_fwhm,V_feat_i_1,V_feat_i_2,V_feat_v_1,V_feat_v_2,V_feat_fwhm_1,V_feat_fwhm_2,loss,d = algoritmos.Clasificar(fname)
-        data.append([ruta_entrada,velocidad_media,mean_intensidad,N,total_dispersion,max_vel,max_int,min_vel,min_int,var_int,var_vel,mean_fwhm,var_fwhm,V_feat_i_1,V_feat_i_2,V_feat_v_1,V_feat_v_2,V_feat_fwhm_1,V_feat_fwhm_2,loss,d])
-        df = pd.DataFrame(data,columns=['Video','velocidad media','mean_intensidad','N','dispersion','max_vel','max_int','min_vel','min_int','var_int','var_vel','mean_fwhm','var_fwhm','V_feat_i_1','V_feat_i_2','V_feat_v_1','V_feat_v_2','V_feat_fwhm_1','V_feat_fwhm_2','loss','recorrido' ])
+        data = []
+        ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int, var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1, V_feat_fwhm_2, loss, d = algoritmos.Clasificar(
+            fname)
+        data.append(
+            [ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int,
+             var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1,
+             V_feat_fwhm_2, loss, d])
+        df = pd.DataFrame(data, columns=['Video', 'velocidad media', 'mean_intensidad', 'N', 'dispersion', 'max_vel',
+                                         'max_int', 'min_vel', 'min_int', 'var_int', 'var_vel', 'mean_fwhm', 'var_fwhm',
+                                         'V_feat_i_1', 'V_feat_i_2', 'V_feat_v_1', 'V_feat_v_2', 'V_feat_fwhm_1',
+                                         'V_feat_fwhm_2', 'loss', 'recorrido'])
         df['V_feat_fwhm_1'] = df['V_feat_fwhm_1'].replace([np.nan, np.inf, -np.inf], 0)
         df['V_feat_fwhm_2'] = df['V_feat_fwhm_2'].replace([np.nan, np.inf, -np.inf], 0)
         df['V_feat_v_1'] = df['V_feat_v_1'].replace([np.nan, np.inf, -np.inf], 0)
@@ -64,7 +72,7 @@ def predict(fname,salida,model,umbral=0.083,verbose=False,localize=False):
         dpredict = xgb.DMatrix(df)
         prob = booster.predict(dpredict)
         log = []
-        porcentaje=np.round(prob*100,decimals=2)[0]
+        porcentaje = np.round(prob * 100, decimals=2)[0]
         if (prob > umbral):
             log.append([fname, porcentaje, 'Bólido'])
         else:
@@ -72,20 +80,23 @@ def predict(fname,salida,model,umbral=0.083,verbose=False,localize=False):
         prediccion = pd.DataFrame(log, columns=['Nombre Archivo', 'Probabilidad de Bólido', 'Etiqueta'])
         abio.save_predict(prediccion, salida, verbose)
         if localize:
-            if N>0:
-                framesarray, fps = get_frames(fname)
-                im1, i = algoritmos.localizer(fname,framesarray,salida)
-                abio.save_img(im1, fname, i, salida)
+            if N > 0:
+                if (prob > umbral):
+                    framesarray, fps = get_frames(fname)
+                    im1, i = algoritmos.localizer(fname, framesarray, salida)
+                    abio.save_img(im1, fname, i, salida)
     pass
 
 
-def train(fname,fout,test_sz=0.15):
+def train(fname, fout, test_sz=0.15):
     inicio = time.time()
-    print(fname,fout)
+    print(fname, fout)
     df_data = pd.read_csv(fname)
     df_data = df_data.dropna(how='any')
     aux = []
-    aux.append(['auxiliar', 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0])
+    aux.append(
+        ['auxiliar', 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0])
     aux = pd.DataFrame(aux,
                        columns=['Video', 'velocidad media', 'mean_intensidad', 'N', 'dispersion', 'max_vel', 'max_int',
                                 'min_vel', 'min_int', 'var_int', 'var_vel', 'mean_fwhm', 'var_fwhm', 'V_feat_i_1',
@@ -95,8 +106,6 @@ def train(fname,fout,test_sz=0.15):
     df_data = df_data.drop(['var_vel'], axis=1)
     df_data = df_data.drop(['mean_fwhm'], axis=1)
     df_data = df_data.drop(['var_fwhm'], axis=1)
- #   df_data = df_data.drop(['V_feat_fwhm_2'], axis=1)
-  #  df_data = df_data.drop(['V_feat_v_2'], axis=1)
 
     df_data = df_data.loc[(df_data != 0.0).any(axis=1)]
     df_data = pd.concat([df_data, aux], axis=0)
@@ -110,7 +119,7 @@ def train(fname,fout,test_sz=0.15):
     negative_test = y_test['label'].count() - positive_test
     Resp1 = 'Distinto'
     while (Resp1 != 'Y') and (Resp1 != 'y') and (Resp1 != 'N') and (Resp1 != 'n'):
-        Texto1 = 'Cantidad de bólidos en entrenamiento', positive_instances, 'Cantidad de no bólidos en entrenamiento', negative_instances, 'Cantidad de bolidos en test',positive_test,'Cantidad de no bolidos en test',negative_test,'Desea continuar? Y/N'
+        Texto1 = 'Cantidad de bólidos en entrenamiento', positive_instances, 'Cantidad de no bólidos en entrenamiento', negative_instances, 'Cantidad de bolidos en test', positive_test, 'Cantidad de no bolidos en test', negative_test, 'Desea continuar? Y/N'
         Resp1 = input(Texto1)
         if Resp1 == 'Y' or Resp1 == 'y':
             dtrain = xgb.DMatrix(X_train, label=y_train)
@@ -128,31 +137,28 @@ def train(fname,fout,test_sz=0.15):
             num_boost_round = 3000
 
             gridsearch_params = [
-                (max_depth,subsample, min_child_weight,eta)
+                (max_depth, subsample, min_child_weight, eta)
                 for max_depth in range(3, 7)
                 for subsample in [i / 10. for i in range(5, 9)]
                 for min_child_weight in range(5, 9)
-                for eta in [.1, .2,0.3]
-                # for max_depth in [6]
-                # for subsample in [i / 10. for i in [7]]
-                # for min_child_weight in [5]
-                # for eta in [0.2]
+                for eta in [.1, .2, 0.3]
+
             ]
             # Define initial best params and MAE
             min_mae = float("Inf")
             best_params = None
-            for max_depth,subsample,min_child_weight,eta in gridsearch_params:
+            for max_depth, subsample, min_child_weight, eta in gridsearch_params:
                 print("CV with max_depth={},subsample={}, min_child_weight={}, eta={} ".format(
                     max_depth,
                     subsample,
                     min_child_weight,
                     eta,
-                    ),'current min mae',min_mae)
+                ), 'current min mae', min_mae)
                 # Update our parameters
                 params['max_depth'] = max_depth
                 params['subsample'] = subsample
                 params['min_child_weight'] = min_child_weight
-                params['eta']=eta
+                params['eta'] = eta
 
                 # Run CV
                 cv_results = xgb.cv(
@@ -170,14 +176,14 @@ def train(fname,fout,test_sz=0.15):
                 print("\tMAE {} for {} rounds".format(mean_mae, boost_rounds))
                 if mean_mae < min_mae:
                     min_mae = mean_mae
-                    best_params = (max_depth,subsample,min_child_weight,eta)
-            print("Best params: {},{},{}, {}, MAE: {}".format(best_params[0], best_params[1], best_params[2],best_params[3], min_mae))
+                    best_params = (max_depth, subsample, min_child_weight, eta)
+            print("Best params: {},{},{}, {}, MAE: {}".format(best_params[0], best_params[1], best_params[2],
+                                                              best_params[3], min_mae))
 
             params['max_depth'] = best_params[0]
             params['subsample'] = best_params[1]
             params['min_child_weight'] = best_params[2]
-            params['eta']=best_params[3]
-
+            params['eta'] = best_params[3]
 
             model = xgb.train(
                 params,
@@ -202,24 +208,25 @@ def train(fname,fout,test_sz=0.15):
                 f2.append(fbeta_score(y_test, y_pred, beta=2))
             umbral = np.argmax(f2) / 1000
             y_pred = (best_model.predict(dtest) > umbral) * 1
-            print('El mejor umbral según el f2_score es:',umbral)
+            print('El mejor umbral según el f2_score es:', umbral)
 
-            matrix=confusion_matrix(y_test, y_pred, labels=[0, 1])
+            matrix = confusion_matrix(y_test, y_pred, labels=[0, 1])
             print(params)
             print(matrix)
 
-
-            best_model.save_model("model_"+str(umbral)+".bin")
-            f=open("model_"+str(umbral)+".txt","w")
-            f.write("Informacion de model_"+str(umbral)+".bin entrenado utilizando xgboost: \n")
-            f.write('Modelo entrenado con: '+str(positive_instances)+' bólidos y '+str(negative_instances)+' no bólidos en entrenamiento y luego testeado con '+str(positive_test)+' bolidos y '+str(negative_test)+' de no bolidos en test\n')
+            best_model.save_model("model_" + str(umbral) + ".bin")
+            f = open("model_" + str(umbral) + ".txt", "w")
+            f.write("Informacion de model_" + str(umbral) + ".bin entrenado utilizando xgboost: \n")
+            f.write('Modelo entrenado con: ' + str(positive_instances) + ' bólidos y ' + str(
+                negative_instances) + ' no bólidos en entrenamiento y luego testeado con ' + str(
+                positive_test) + ' bolidos y ' + str(negative_test) + ' de no bolidos en test\n')
             f.write('El mejor umbral encontrado según el f2_score es:  \n')
-            f.write(str(umbral)+"\n")
-            f.write("Con los hiperparametros: \n " )
-            str_params=repr(params)
-            f.write(str_params +"\n")
+            f.write(str(umbral) + "\n")
+            f.write("Con los hiperparametros: \n ")
+            str_params = repr(params)
+            f.write(str_params + "\n")
             f.write("y matriz de confusion: \n ")
-            str_matrix=repr(matrix)
+            str_matrix = repr(matrix)
             f.write(str_matrix)
             f.write('\n')
             sorted_idx = best_model.get_score(importance_type='weight')
@@ -227,8 +234,8 @@ def train(fname,fout,test_sz=0.15):
             f.write(str(sorted_idx))
             f.write('\n')
             fin = time.time()
-            elapsed=fin-inicio
-            f.write('tiempo de entrenamiento total ' + str(elapsed)+ ' segundos')
+            elapsed = fin - inicio
+            f.write('tiempo de entrenamiento total ' + str(elapsed) + ' segundos')
             f.close()
 
 
@@ -237,11 +244,10 @@ def train(fname,fout,test_sz=0.15):
         else:
             pass
 
-
     pass
 
-def crear_mascara(fname):
 
+def crear_mascara(fname):
     global filll
     global colll
     global counter
@@ -250,21 +256,21 @@ def crear_mascara(fname):
     counter = -1
 
     station = algoritmos.numero_estacion(fname)
-    if os.path.exists('Mascaras\Mascara_Station_' + str(station) + '.png'):
+    if os.path.exists('./Mascaras/Mascara_Station_' + str(station) + '.png'):
 
-        Cont=0
-        Resp1='Distinto'
-        while (Resp1!='Y') and (Resp1!='y') and (Resp1!='N') and (Resp1!='n') and(Cont<3):
-            Cont=Cont+1
-            Texto1='La máscara de la estación ' + str(station)+' ya existe, desea recrearla? Y or N'
+        Cont = 0
+        Resp1 = 'Distinto'
+        while (Resp1 != 'Y') and (Resp1 != 'y') and (Resp1 != 'N') and (Resp1 != 'n') and (Cont < 3):
+            Cont = Cont + 1
+            Texto1 = 'La máscara de la estación ' + str(station) + ' ya existe, desea recrearla? Y or N'
             Resp1 = input(Texto1)
-            if Resp1=='Y' or Resp1=='y':
+            if Resp1 == 'Y' or Resp1 == 'y':
                 algoritmos.CrearMascara(fname)
 
             else:
                 pass
 
-        if (Resp1!='Y')and(Resp1!='y')and(Resp1!='N')and(Resp1!='n'):
+        if (Resp1 != 'Y') and (Resp1 != 'y') and (Resp1 != 'N') and (Resp1 != 'n'):
             print('Ejecut-e de nuevo el modulo con una respuesta valida')
 
     else:
