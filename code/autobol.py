@@ -68,7 +68,7 @@ if __name__ == '__main__':
                     filename = os.fsdecode(filename)
                     if filename.endswith(".avi"):
                         pathh= dirpath+'/' + os.path.join(filename)
-                        print(pathh)
+                        print("Modo predict verbose ",pathh)
                         functions.predict(pathh, foutdir,model,umb,True,False)
         else:
             if loc:
@@ -78,7 +78,7 @@ if __name__ == '__main__':
                         filename = os.fsdecode(filename)
                         if filename.endswith(".avi"):
                             pathh = dirpath + '/' + os.path.join(filename)
-                            print(pathh)
+                            print("Modo predict localize ",pathh)
                             functions.predict(pathh, foutdir,model,umb,False,True)
             else:
                 foutdir = outdir
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                         filename = os.fsdecode(filename)
                         if filename.endswith(".avi"):
                             pathh = dirpath + '/' + os.path.join(filename)
-                            print(pathh)
+                            print("Modo predict ",pathh)
                             functions.predict(pathh, foutdir, model, umb, False, False)
 
     elif mode == "train":

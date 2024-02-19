@@ -81,10 +81,9 @@ def predict(fname, salida, model, umbral=0.083, verbose=False, localize=False):
         abio.save_predict(prediccion, salida, verbose)
         if localize:
             if N > 0:
-                if (prob > umbral):
-                    framesarray, fps = get_frames(fname)
-                    im1, i = algoritmos.localizer(fname, framesarray, salida)
-                    abio.save_img(im1, fname, i, salida)
+                framesarray, fps = get_frames(fname)
+                algoritmos.localizer(fname, framesarray, salida)
+
     pass
 
 
@@ -119,7 +118,7 @@ def train(fname, fout, test_sz=0.15):
     negative_test = y_test['label'].count() - positive_test
     Resp1 = 'Distinto'
     while (Resp1 != 'Y') and (Resp1 != 'y') and (Resp1 != 'N') and (Resp1 != 'n'):
-        Texto1 = 'Cantidad de bólidos en entrenamiento', positive_instances, 'Cantidad de no bólidos en entrenamiento', negative_instances, 'Cantidad de bolidos en test', positive_test, 'Cantidad de no bolidos en test', negative_test, 'Desea continuar? Y/N'
+        Texto1 = 'Cantidad de bólidos en entrenamiento', positive_instances, 'Cantidad de no bólidos en entrenamiento', negative_instances, 'Cantidad de bolidos en test', positive_test, 'Cantidad de nobolidos en test', negative_test, 'Desea continuar? Y/N'
         Resp1 = input(Texto1)
         if Resp1 == 'Y' or Resp1 == 'y':
             dtrain = xgb.DMatrix(X_train, label=y_train)
@@ -219,7 +218,7 @@ def train(fname, fout, test_sz=0.15):
             f.write("Informacion de model_" + str(umbral) + ".bin entrenado utilizando xgboost: \n")
             f.write('Modelo entrenado con: ' + str(positive_instances) + ' bólidos y ' + str(
                 negative_instances) + ' no bólidos en entrenamiento y luego testeado con ' + str(
-                positive_test) + ' bolidos y ' + str(negative_test) + ' de no bolidos en test\n')
+                positive_test) + ' bolidos y ' + str(negative_test) + ' de nobolidos en test\n')
             f.write('El mejor umbral encontrado según el f2_score es:  \n')
             f.write(str(umbral) + "\n")
             f.write("Con los hiperparametros: \n ")

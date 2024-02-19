@@ -12,7 +12,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
 import numpy
 import math
 from scipy import stats
@@ -25,11 +24,11 @@ import cv2
 import skimage.draw
 import matplotlib.image as mpl
 import matplotlib.cm as cm
-from PIL import Image, ImageDraw as D
-
+import matplotlib.patches as patches
+import re
 
 def localizer(fname,framesarray,fout):
-    _, _, x, y, _, _, _, _, _, _ = tracking(fname)
+    x, y, excluidos_c_RANSAC,excluidos_f_RANSAC,excluidos_c_filtro,excluidos_f_filtro,xc,yc,r = tracking(fname,True)
     maximo = numpy.percentile(framesarray, 100, axis=0)
     max_x=numpy.max(x)+3
     min_x=numpy.min(x)-3
@@ -38,18 +37,35 @@ def localizer(fname,framesarray,fout):
     min_y=numpy.min(y)-3
     coincide=False
     i=0
-    while coincide==False:
-        if fname[i:i+7].startswith('Station'):
-            coincide=True
-        else:
-            i=i+1
-    mpl.imsave(fout+'/'+fname[i:i+30]+'png', maximo, cmap=cm.gray)
+    theta = numpy.linspace(0, 2 * numpy.pi, 100)
+    x1 = r * numpy.cos(theta) + xc
+    x2 = r * numpy.sin(theta) + yc
+    fig, ax = plt.subplots(1, figsize=(10, 10))
+    ax.plot(x1, x2)  # Circunferencia
 
-    img = Image.open(fout+'/'+fname[i:i+30]+'png')
-    draw = D.Draw(img)
-    draw.rectangle((min_x, min_y,max_x, max_y), outline="red")
-    im1= img
-    return im1, i
+    ax.plot(excluidos_c_RANSAC, excluidos_f_RANSAC, '*b', label='outliers RANSAC')
+    ax.plot(excluidos_c_filtro, excluidos_f_filtro, '*g', label='outliers filtro')
+    ax.plot(x, y, '*y', label='inlier 2da vuelta con filtro')
+    rect=patches.Rectangle((min_x,min_y),(max_x-min_x) , (max_y-min_y), linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+    ax.set_title(fname)
+    ax.set_aspect(1)
+    ax.imshow(maximo,cmap="gray")
+    plt.legend()
+
+    # Regular expression pattern to extract the station number and timestamp without the extension
+    pattern = r"Station_(\d+)_(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})"
+    # Using regular expression to extract the station number and timestamp
+    match = re.search(pattern, fname)
+    if match:
+        station_number = match.group(1)
+        timestamp = match.group(2)
+        result = f"Station_{station_number}_{timestamp}."
+    else:
+        result="NombreDelVideoNoPudoSerExtraido"
+    plt.savefig(fout + '/' + result )  # Change the file name and extension as needed
+
+    return
 
 def tracking(ruta_entrada, ploteo=False):
     """
@@ -195,13 +211,14 @@ def tracking(ruta_entrada, ploteo=False):
             LC.append(lc)
         total_dispersion = dispersion(X_model, Y_model)
 
-        # Grafica la recta obtenida en RANSAC, las coordenadas
+        # Grafica la recta obtenida en RANSAC
         if ploteo:
+            print("Ploteando resultados de RANSAC...")
             theta = numpy.linspace(0, 2 * numpy.pi, 100)
             x1 = r * numpy.cos(theta) + xc
             x2 = r * numpy.sin(theta) + yc
             fig, ax = plt.subplots(1, figsize=(10, 10))
-            ax.plot(x1, x2)  # Circunferenci
+            ax.plot(x1, x2)  # Circunferencia
 
             ax.plot(excluidos_c_RANSAC, excluidos_f_RANSAC, '*b', label='outliers RANSAC')
             ax.plot(excluidos_c_filtro, excluidos_f_filtro, '*g', label='outliers filtro')
@@ -210,6 +227,7 @@ def tracking(ruta_entrada, ploteo=False):
             ax.set_aspect(1)
             ax.imshow(maximo, cmap='gray')
             plt.legend()
+            return X_model, Y_model, excluidos_c_RANSAC,excluidos_f_RANSAC,excluidos_c_filtro,excluidos_f_filtro,xc,yc,r
 
         return ruta_entrada,tiempo, X_model, Y_model, LC, len(X_model), total_dispersion[0], FWHMarray, loss, d
 
@@ -483,7 +501,7 @@ def V_feature(array):
 
 
 
-def numero_estacion(file):
+def numero_estacion(file_name):
     """
     Gets the station number from the file name.
 
@@ -493,17 +511,19 @@ def numero_estacion(file):
     Returns:
     	- f: Integer with corresponding station number.
     """
-    f = 0
-    Encontro = False
-    while (f < 100) and Encontro == False:
-        palabra = "Station_" + str(f)
 
-        if (file.find(palabra) != -1):
-            Encontro = True
-        else:
-            f = f + 1
+    # Regular expression pattern to extract the station number
+    pattern = r"Station_(\d+)_"
 
-    return f
+    # Using regular expression to extract the station number
+    match = re.search(pattern, file_name)
+
+    if match:
+        station_number = int(match.group(1))
+        return station_number
+    else:
+        print('station number not found')
+
 
 # ----------------------------------------------------------------------------------------
 

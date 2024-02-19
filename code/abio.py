@@ -30,6 +30,6 @@ def save_predict(data,salida,verbose):
     pass
 
 
-def save_img(img,fname,i,fout):
-    img.save(fout+'/'+fname[i:i+30]+'png')
+def save_img(img,fname,fout):
+    img.save(fout+'/'+fname+'png')
     pass
