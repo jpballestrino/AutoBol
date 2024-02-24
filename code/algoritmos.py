@@ -26,8 +26,25 @@ import matplotlib.image as mpl
 import matplotlib.cm as cm
 import matplotlib.patches as patches
 import re
+import pandas as pd
+import abio
+import algoritmos
 
 def localizer(fname,framesarray,fout):
+    data = []
+    ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int, var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1, V_feat_fwhm_2, loss, d = algoritmos.Clasificar(
+        fname)
+    data.append(
+        [ruta_entrada, velocidad_media, mean_intensidad, N, total_dispersion, max_vel, max_int, min_vel, min_int,
+         var_int, var_vel, mean_fwhm, var_fwhm, V_feat_i_1, V_feat_i_2, V_feat_v_1, V_feat_v_2, V_feat_fwhm_1,
+         V_feat_fwhm_2, loss, d, 'NaN'])
+    data_ft = pd.DataFrame(data,
+                           columns=['Video', 'velocidad media', 'mean_intensidad', 'N', 'dispersion', 'max_vel',
+                                    'max_int', 'min_vel', 'min_int', 'var_int', 'var_vel', 'mean_fwhm', 'var_fwhm',
+                                    'V_feat_i_1', 'V_feat_i_2', 'V_feat_v_1', 'V_feat_v_2', 'V_feat_fwhm_1',
+                                    'V_feat_fwhm_2', 'loss', 'recorrido', 'Clasificación'])
+    abio.save_predict(data_ft, fout, True)
+
     x, y, excluidos_c_RANSAC,excluidos_f_RANSAC,excluidos_c_filtro,excluidos_f_filtro,xc,yc,r = tracking(fname,True)
     maximo = numpy.percentile(framesarray, 100, axis=0)
     max_x=numpy.max(x)+3
@@ -166,7 +183,7 @@ def tracking(ruta_entrada, ploteo=False):
                     numpy.sqrt((columna[i] - xc) ** 2 + (fila[i] - yc) ** 2) - r) <= 5:
                 x2, y2 = center_mass(video_tracking[i], fila[i], columna[i], ventana)
                 if (numpy.isnan(x2)) or (numpy.isnan(y2)):
-                    algo = 0
+                    pass
                 else:
                     X_model.append(x2)
                     Y_model.append(y2)
